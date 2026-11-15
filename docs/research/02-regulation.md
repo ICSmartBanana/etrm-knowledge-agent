@@ -23,6 +23,8 @@
 
 The brief §8 asks for the US states, the UK, Australia and India as well. None of them was researched in M0. They're logged as an open item for M4, when the regulatory register is built.
 
+**Done in M4:** see the [regulatory register](../governance/regulatory-register.md). It also updates the Digital Omnibus point above: it was adopted as Reg. (EU) 2026/1744 and did not move Art. 50(1).
+
 ## Sources
 
 - EU AI Act Art. 50 commentary: [Cooley](https://cooley.com/news/insight/2026/2026-08-03-eu-ai-act-transparency-obligations-take-effect-2-august-2026) · [Sidley Data Matters](https://datamatters.sidley.com/2026/06/24/eu-ai-act-transparency-obligations-preparing-for-compliance-by-2-august-2026/) · [McCann FitzGerald](https://www.mccannfitzgerald.com/knowledge/technology-and-innovation/one-month-to-go-eu-ai-act-transparency-compliance) · [Stephenson Harwood on the Commission guidelines](https://perspectives.stephensonharwood.com/post/102nfqh/eu-ai-act-update-european-commission-adopts-guidelines-on-article-50-transparenc) · [CSA research note](https://labs.cloudsecurityalliance.org/research/csa-research-note-eu-ai-act-article-50-transparency-20260729/) · [Chambers / WH Partners](https://chambers.com/articles/eu-ai-act-the-latest-compliance-checkpoint) · [GDPR Local](https://gdprlocal.com/eu-ai-act-article-50/)

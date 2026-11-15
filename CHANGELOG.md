@@ -4,6 +4,13 @@ Every change to prompts, models, retrieval settings or knowledge bases gets an e
 
 ## [Unreleased]
 
+### Added (M4 governance pack)
+- `docs/governance/`: risk register (12 risks, each with an owner, a mitigation and covering tests), model card (narrative; the facts stay generated), human-oversight note, incident process, regulatory register (EU, US federal and states, UK, Australia, India, with review dates), and a README index mapped to the NIST AI RMF functions.
+- `tests/governance/test_registers.py`: fails if a risk's covering test, gate, eval suite or CI job no longer exists, if a risk or region that the brief requires is missing, or if a regulatory row's review dates are invalid.
+- `tests/api/test_api.py::test_abstains_without_calling_the_model_when_retrieval_is_weak`: the cite-or-abstain path (risk R4) had no direct test.
+- The UI shows each answer's trace ID, so users can quote it when they report a problem (incident process).
+- `scripts/gen_docs.py` copies `docs/` into the `governance-docs` artifact in the repo layout, so the pack's relative links resolve there too.
+
 ### Added (M3 CI/CD)
 - GitHub Actions:
   - `ci.yml`: lint, types, tests with Postgres and isolation tests, Bandit, pip-audit, Semgrep, Gitleaks, Trivy, governance check, generated docs

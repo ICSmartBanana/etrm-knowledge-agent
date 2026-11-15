@@ -59,6 +59,8 @@ for m in st.session_state.messages:
         st.markdown(m["content"])
         for c in m.get("citations", []):
             st.caption(f"Source: {c['title']} ({c['doc_id']})")
+        if m.get("trace_id"):
+            st.caption(f"Trace ID (quote it when reporting a problem): {m['trace_id']}")
 
 if question := st.chat_input("Ask about your trading operations"):
     st.session_state.messages.append({"role": "user", "content": question})
@@ -70,6 +72,12 @@ if question := st.chat_input("Ask about your trading operations"):
         st.markdown(resp["answer"])
         for c in resp["citations"]:
             st.caption(f"Source: {c['title']} ({c['doc_id']})")
+        st.caption(f"Trace ID (quote it when reporting a problem): {resp['trace_id']}")
     st.session_state.messages.append(
-        {"role": "assistant", "content": resp["answer"], "citations": resp["citations"]}
+        {
+            "role": "assistant",
+            "content": resp["answer"],
+            "citations": resp["citations"],
+            "trace_id": resp["trace_id"],
+        }
     )

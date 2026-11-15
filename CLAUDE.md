@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-Milestones M0 (research, ADR) and M1 (synthetic data) are done; M2 (baseline agent) is in progress. Scope comes from:
+Milestones M0 (research, ADR), M1 (synthetic data) and M2 (baseline agent, Langfuse tracing) are done; M3 (CI/CD) is in progress. Scope comes from:
 
 - `docs/brief/requirements-v0.1.docx`: the requirements brief (FR1–FR7, eval sets, CI gates, governance pack). It's the source of truth for scope.
 - `docs/brief/implementation-plan.md`: the milestones M0–M6 with "done when" criteria, and the cost-control rules.
@@ -28,12 +28,30 @@ uv run streamlit run app/ui/streamlit_app.py         # UI (talks to the API)
 docker compose up --build                 # db + api (:8000) + ui (:8501) in containers
 uv run python -m evals.run --suite regression        # PR eval subset (calls Sonnet, ~$1)
 uv run python -m evals.run --suite all               # full suite (~$3)
+uv run python -m evals.compare check --results evals/results/<run>.json   # gate a run vs thresholds
+uv run python scripts/gen_docs.py --out build/docs   # model card, data register, eval report, changelog
+uv run python scripts/governance_check.py origin/main  # governed areas changed without docs?
 uv run python -m datagen.generate         # generate only missing corpus docs (calls Claude Haiku)
+uvx pre-commit install                    # local gitleaks + ruff hooks
 ```
 
 Use `127.0.0.1`, not `localhost`, for the database: on this Windows machine `localhost` tries IPv6 first and each connect stalls. Database schema changes go in `db/init/01_schema.sh`, which runs only on an empty volume, so after changing it run `docker compose down -v`, bring the db back up, then re-ingest. Keep shell scripts LF (`.gitattributes`), or the container can't run them.
 
-Still to come: Bandit, pip-audit, Gitleaks, Promptfoo, Ragas, CI workflows (M3), and Langfuse dashboards and alerts.
+## CI (`.github/workflows/`)
+
+- `ci.yml` (every PR and push to main) runs these jobs:
+  - lint: ruff and mypy
+  - tests: Postgres via compose, then ingest, then pytest. The job fails if any `db` test was skipped.
+  - security: Bandit, pip-audit, Semgrep `p/python` + `p/secrets`, Gitleaks over the full history
+  - Trivy: on PRs that touch the Dockerfile or dependencies, and on main
+  - governance: `scripts/governance_check.py`
+  - docs: generated docs uploaded as the `governance-docs` artifact
+- `eval.yml` runs on PRs that touch `app/`, `prompts/`, `ingest/`, `data/`, `evals/` or `db/`. It runs the regression subset, then `evals.compare check` against `evals/thresholds.yaml`, and posts the score table as a PR comment. It needs the `ANTHROPIC_API_KEY` repo secret. A hard-gate failure or a metric below its floor fails the job.
+- `weekly.yml` (Mondays, or run it by hand) runs the full eval suite and a Trivy scan.
+- Floors in `evals/thresholds.yaml` only ever go up. The regression baseline (`iteration-1-regression.json`) is derived from the full-run results with `evals.compare make-baseline`, not from a separate run.
+- Scanner versions are pinned in the workflows. Locally, run Semgrep, Gitleaks and Trivy in Docker with `MSYS_NO_PATHCONV=1` (Git Bash rewrites `/src`-style paths). Use `# nosec <ID>` only with the justification on the line above, because Bandit parses any words after it.
+
+Still to come: Promptfoo, Ragas, and Langfuse dashboards and alerts.
 
 ## How a request flows (M2)
 

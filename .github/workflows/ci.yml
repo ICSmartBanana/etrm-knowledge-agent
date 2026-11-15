@@ -1,0 +1,159 @@
+# Code quality, tests, security and governance on every PR and push to main (brief §7).
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_VERSION: "0.13.8"
+
+jobs:
+  lint:
+    name: lint and types
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy app ingest datagen evals scripts
+
+  test:
+    name: tests (incl. tenant isolation)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+      - uses: actions/cache@v4
+        with:
+          path: .cache/fastembed
+          key: fastembed-bge-small-en-v1.5
+      - name: Write throwaway CI database passwords
+        run: |
+          for v in ETRM_OWNER_PASSWORD ETRM_APP_PASSWORD ETRM_INGEST_PASSWORD; do
+            echo "$v=$(openssl rand -hex 16)" >> .env
+          done
+          echo "ETRM_DB_HOST=127.0.0.1" >> .env
+          echo "ETRM_DB_PORT=5433" >> .env
+          echo "ANTHROPIC_API_KEY=not-used-by-tests" >> .env
+      - name: Start Postgres + pgvector
+        run: docker compose up -d --wait db
+      - run: uv sync --frozen
+      - name: Ingest the corpus
+        run: uv run python -m ingest.cli
+      - name: Run tests
+        run: uv run pytest -v --junitxml=test-results.xml
+      - name: Fail if any database test was skipped
+        run: |
+          if grep -q 'Postgres not running' test-results.xml; then
+            echo "::error::db-marked tests were skipped; isolation was not tested"; exit 1
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: test-results.xml
+
+  security:
+    name: security scans
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # gitleaks scans the full history
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+      - name: Bandit (Python static analysis)
+        run: uvx bandit -q -r app ingest datagen evals scripts
+      - name: pip-audit (known-vulnerable dependencies)
+        run: |
+          uv export --frozen --no-dev --no-hashes -q -o requirements.txt
+          uvx pip-audit -r requirements.txt --no-deps --disable-pip
+      - name: Semgrep (p/python, p/secrets)
+        run: |
+          docker run --rm -v "$PWD:/src" -w /src semgrep/semgrep:1.140.0 \
+            semgrep scan --config p/python --config p/secrets --error --metrics=off
+      - name: Gitleaks (secrets in git history)
+        run: |
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.24.3 \
+            git /repo --redact --no-banner
+
+  image-scan:
+    name: container image scan (Trivy)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            image:
+              - Dockerfile
+              - .dockerignore
+              - pyproject.toml
+              - uv.lock
+              - .github/workflows/ci.yml
+      - name: Build image
+        if: steps.changes.outputs.image == 'true' || github.event_name == 'push'
+        run: docker build -t etrm-agent:ci .
+      - name: Trivy (HIGH/CRITICAL with a fix available)
+        if: steps.changes.outputs.image == 'true' || github.event_name == 'push'
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.67.2 \
+            image --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 etrm-agent:ci
+      - name: Skipped
+        if: steps.changes.outputs.image != 'true' && github.event_name != 'push'
+        run: echo "Image inputs unchanged in this PR; Trivy runs on main and weekly."
+
+  governance:
+    name: governance check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: ${{ env.UV_VERSION }}
+      - run: uv run --no-project python scripts/governance_check.py "origin/${{ github.base_ref }}"
+
+  docs:
+    name: generate governance docs
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+      - run: uv sync --frozen
+      - run: uv run python scripts/gen_docs.py --out build/docs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: governance-docs
+          path: build/docs

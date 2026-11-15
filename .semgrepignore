@@ -1,0 +1,6 @@
+.venv/
+.cache/
+.traces/
+evals/results/
+data/synthetic/
+tests/

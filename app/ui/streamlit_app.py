@@ -7,12 +7,15 @@ from __future__ import annotations
 
 import json
 import os
+import urllib.parse
 import urllib.request
 from typing import Any
 
 import streamlit as st
 
 API_URL = os.environ.get("ETRM_API_URL", "http://127.0.0.1:8000")
+if urllib.parse.urlparse(API_URL).scheme not in ("http", "https"):
+    raise ValueError("ETRM_API_URL must be an http(s) URL")
 
 
 def _post(path: str, body: dict[str, Any], token: str | None = None) -> dict[str, Any]:
@@ -22,7 +25,8 @@ def _post(path: str, body: dict[str, Any], token: str | None = None) -> dict[str
     req = urllib.request.Request(  # noqa: S310 - fixed http(s) API URL from config
         API_URL + path, data=json.dumps(body).encode(), headers=headers, method="POST"
     )
-    with urllib.request.urlopen(req, timeout=120) as resp:  # noqa: S310
+    # Scheme is validated as http(s) at import time above.
+    with urllib.request.urlopen(req, timeout=120) as resp:  # noqa: S310  # nosec B310
         result: dict[str, Any] = json.loads(resp.read())
         return result
 

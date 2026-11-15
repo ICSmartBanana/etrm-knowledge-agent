@@ -1,0 +1,70 @@
+# Weekly full eval suite and image scan, so a quiet week never leaves a gap in the evidence
+# (brief §7). Also runnable by hand from the Actions tab.
+name: weekly
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"  # Mondays 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  full-eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - name: Require the API key secret
+        if: env.ANTHROPIC_API_KEY == ''
+        run: |
+          echo "::error::Repository secret ANTHROPIC_API_KEY is not set."
+          exit 1
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.13.8"
+          enable-cache: true
+      - uses: actions/cache@v4
+        with:
+          path: .cache/fastembed
+          key: fastembed-bge-small-en-v1.5
+      - name: Write throwaway CI database passwords
+        run: |
+          for v in ETRM_OWNER_PASSWORD ETRM_APP_PASSWORD ETRM_INGEST_PASSWORD; do
+            echo "$v=$(openssl rand -hex 16)" >> .env
+          done
+          printf 'ETRM_DB_HOST=127.0.0.1\nETRM_DB_PORT=5433\n' >> .env
+      - run: docker compose up -d --wait db
+      - run: uv sync --frozen
+      - run: uv run python -m ingest.cli
+      - run: uv run python -m evals.run --suite all || true
+      - name: Compare with baseline and thresholds
+        id: compare
+        run: |
+          RESULTS=$(ls -t evals/results/*.json | head -1)
+          echo "results=$RESULTS" >> "$GITHUB_OUTPUT"
+          uv run python -m evals.compare check --results "$RESULTS" --markdown eval-report.md
+      - name: Job summary
+        if: always() && steps.compare.outputs.results != ''
+        run: cat eval-report.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: weekly-eval
+          path: |
+            evals/results/*.json
+            eval-report.md
+
+  image-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t etrm-agent:weekly .
+      - name: Trivy (HIGH/CRITICAL with a fix available)
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.67.2 \
+            image --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 etrm-agent:weekly

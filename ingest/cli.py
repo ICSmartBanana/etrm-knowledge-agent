@@ -11,7 +11,9 @@ from __future__ import annotations
 
 import argparse
 import hashlib
-import subprocess
+
+# subprocess runs only our own eval module with a fixed argv (see main()).
+import subprocess  # nosec B404
 import sys
 from datetime import date
 from pathlib import Path
@@ -116,7 +118,8 @@ def main() -> int:
     ingest()
     if args.run_evals:
         cmd = [sys.executable, "-m", "evals.run", "--suite", "regression"]
-        return subprocess.call(cmd)  # noqa: S603 - fixed argv, no shell
+        # Fixed argv, no shell.
+        return subprocess.call(cmd)  # noqa: S603  # nosec B603
     return 0
 
 

@@ -9,7 +9,28 @@ This is a **pre-code repository** (milestone M0). The only content so far is the
 - `docs/brief/requirements-v0.1.docx`: the requirements brief (FR1–FR7, eval sets, CI gates, governance pack). It's the source of truth for scope.
 - `docs/brief/implementation-plan.md`: the chosen stack, the proposed repo layout, the milestones M0–M6 with "done when" criteria, and the cost-control rules.
 
-No build, lint, or test commands exist yet. When you add tooling, update this file with the real commands. The planned toolchain is `uv` (Python 3.12), Ruff, mypy, pytest, Bandit, pip-audit, Gitleaks, Promptfoo (Node), Ragas, and `docker compose up` for Postgres, the API, and the UI.
+## Commands
+
+The project uses `uv` with Python 3.12 (pinned in `.python-version`). Dependencies are locked in `uv.lock`.
+
+```bash
+uv sync                                   # install deps into .venv
+uv run pytest                             # all tests (offline, no API calls)
+uv run pytest tests/data/test_corpus.py -k a-002   # a single test / single doc
+uv run ruff check . && uv run ruff format --check .
+uv run mypy datagen
+uv run python -m datagen.generate         # generate only missing corpus docs (calls Claude Haiku)
+uv run python -m datagen.generate --force --tenant clan_b   # regenerate one tenant (costs API calls)
+```
+
+Still to come: Bandit, pip-audit, Gitleaks, Promptfoo (Node), Ragas, and `docker compose up` for Postgres, the API and the UI.
+
+## Synthetic data (M1)
+
+- `data/spec/<tenant>.yaml` is the ground truth. `[[key values]]` in facts must appear verbatim in the generated doc. See `data/spec/README.md`.
+- `datagen/` generates `data/synthetic/<tenant>/<doc_id>.md` (YAML front matter carrying `tenant_id`, `data_class`, `status`, and `supersedes`/`contradicts`, then a Markdown body). It also writes `data/pii_registry.json` and `data/canaries.json`.
+- The corpus is **committed and frozen**. Don't regenerate it unless the spec changes. After any regeneration, rerun `tests/data/test_corpus.py`, which validates every doc against its spec and checks that no doc names another tenant, carries its canary or PII, or contains invented PII.
+- Messy data is deliberate (superseded versions, contradictions, near-duplicates, the injected instruction `INJECTION-TEST-0001` in `b-006`). Don't "fix" it. `docs/governance/data-source-register.md` lists it all.
 
 Scope order: finish M0–M4 (research → synthetic data → baseline agent → CI/CD → governance) before any optimisation. Latency tuning, fine-tuning, and real client data are non-goals for iteration 1.
 

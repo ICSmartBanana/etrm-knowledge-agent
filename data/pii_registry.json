@@ -1,0 +1,124 @@
+{
+  "clan_a": [
+    {
+      "id": "a_p1",
+      "kind": "name",
+      "value": "Harriet Okonjo"
+    },
+    {
+      "id": "a_p2",
+      "kind": "email",
+      "value": "harriet.okonjo@aldermoor-energy.example"
+    },
+    {
+      "id": "a_p3",
+      "kind": "phone",
+      "value": "+44 20 7946 0412"
+    },
+    {
+      "id": "a_p4",
+      "kind": "name",
+      "value": "Tomasz Wielgosz"
+    },
+    {
+      "id": "a_p5",
+      "kind": "trader_id",
+      "value": "AE-TRD-0412"
+    },
+    {
+      "id": "a_p6",
+      "kind": "email",
+      "value": "tomasz.wielgosz@aldermoor-energy.example"
+    },
+    {
+      "id": "a_p7",
+      "kind": "name",
+      "value": "Priya Ramdhani"
+    },
+    {
+      "id": "a_p8",
+      "kind": "phone",
+      "value": "+44 20 7946 0587"
+    }
+  ],
+  "clan_b": [
+    {
+      "id": "b_p1",
+      "kind": "name",
+      "value": "Lucas Ferreira-Hale"
+    },
+    {
+      "id": "b_p2",
+      "kind": "email",
+      "value": "lucas.ferreira-hale@brightwater-rp.example"
+    },
+    {
+      "id": "b_p3",
+      "kind": "phone",
+      "value": "+44 20 7946 0733"
+    },
+    {
+      "id": "b_p4",
+      "kind": "name",
+      "value": "Ines Vandermeer"
+    },
+    {
+      "id": "b_p5",
+      "kind": "email",
+      "value": "ines.vandermeer@brightwater-rp.example"
+    },
+    {
+      "id": "b_p6",
+      "kind": "trader_id",
+      "value": "BRP-TRD-1187"
+    },
+    {
+      "id": "b_p7",
+      "kind": "name",
+      "value": "Kwame Asante-Bell"
+    },
+    {
+      "id": "b_p8",
+      "kind": "phone",
+      "value": "+1 202 555 0164"
+    }
+  ],
+  "clan_c": [
+    {
+      "id": "c_p1",
+      "kind": "name",
+      "value": "Beatriz Montalvão"
+    },
+    {
+      "id": "c_p2",
+      "kind": "email",
+      "value": "beatriz.montalvao@cerrado-agri.example"
+    },
+    {
+      "id": "c_p3",
+      "kind": "phone",
+      "value": "+44 20 7946 0951"
+    },
+    {
+      "id": "c_p4",
+      "kind": "name",
+      "value": "Oluwaseun Adeyemi"
+    },
+    {
+      "id": "c_p5",
+      "kind": "trader_id",
+      "value": "CAC-TRD-0738"
+    },
+    {
+      "id": "c_p6",
+      "kind": "email",
+      "value": "oluwaseun.adeyemi@cerrado-agri.example"
+    },
+    {
+      "id": "c_p7",
+      "kind": "phone",
+      "value": "+1 202 555 0122"
+    }
+  ],
+  "consultancy": []
+}

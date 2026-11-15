@@ -1,11 +1,8 @@
 {
   "meta": {
     "suite": "all",
-    "timestamp": "2026-11-15T12:57:01.829010+00:00",
-    "rescored_from": {
-      "file": "20261115T125600-all.json",
-      "answers_generated": "2026-11-15T12:56:00.509028+00:00"
-    },
+    "timestamp": "2026-11-15T13:26:43.468171+00:00",
+    "rescored_from": null,
     "answer_model": "claude-sonnet-5-5",
     "embed_model": "BAAI/bge-small-en-v1.5",
     "prompt_version": "v1",
@@ -21,8 +18,8 @@
     "overall": {
       "n": 242,
       "retrieval_hit_at_k": 1.0,
-      "retrieval_mrr": 0.9063,
-      "must_include": 0.9628,
+      "retrieval_mrr": 0.9057,
+      "must_include": 0.9587,
       "must_not_include": 1.0,
       "outcome_correct": 0.9917,
       "cited_expected_doc": 0.9843
@@ -40,8 +37,8 @@
       "golden": {
         "n": 131,
         "retrieval_hit_at_k": 1.0,
-        "retrieval_mrr": 0.9229,
-        "must_include": 0.9313,
+        "retrieval_mrr": 0.9221,
+        "must_include": 0.9237,
         "must_not_include": 1.0,
         "outcome_correct": 0.9847,
         "cited_expected_doc": 0.9813
@@ -82,9 +79,9 @@
     },
     "hard_gates_passed": true,
     "tokens": {
-      "input": 282981,
-      "output": 33051
+      "input": 280095,
+      "output": 32608
     },
-    "p95_latency_ms": 3124
+    "p95_latency_ms": 2918
   }
 }

@@ -1,6 +1,7 @@
 """Build the golden set (evals/sets/golden.jsonl) from the specs, with Claude Haiku.
 
-    uv run python -m evals.build_golden
+    uv run python -m evals.build_golden          # build from scratch (replaces the frozen set)
+    uv run python -m evals.build_golden --fix    # regenerate only questions that fail the checks
 
 Per client: one question per key value in current, quotable docs; one combined question per doc
 with two or more key values; questions on the consultancy guidance; and hand-written
@@ -18,7 +19,7 @@ import anthropic
 from dotenv import load_dotenv
 
 from datagen.spec import DocSpec, load_all, strip_brackets
-from evals.items import SETS_DIR
+from evals.items import SETS_DIR, question_problems
 
 MODEL = "claude-haiku-5-5"
 
@@ -64,14 +65,37 @@ Facts:
 {facts}"""
 
 
-def _ask(client: anthropic.Anthropic, prompt: str) -> str:
-    resp = client.messages.create(
-        model=MODEL,
-        max_tokens=2000,
-        output_config={"effort": "low"},
-        messages=[{"role": "user", "content": prompt}],
-    )
-    return "".join(b.text for b in resp.content if b.type == "text").strip()
+QUESTION_SCHEMA = {
+    "type": "object",
+    "properties": {"question": {"type": "string"}},
+    "required": ["question"],
+    "additionalProperties": False,
+}
+
+
+def _ask(client: anthropic.Anthropic, prompt: str, keys: list[str]) -> str:
+    """Ask for one question as structured JSON (so no drafting text can leak into it),
+    then validate it, retrying with feedback up to 3 times."""
+    problems: list[str] = []
+    for _ in range(3):
+        content = prompt
+        if problems:
+            content += "\n\nYour previous question had these problems: " + "; ".join(problems)
+        resp = client.messages.create(
+            model=MODEL,
+            max_tokens=2000,
+            output_config={
+                "effort": "low",
+                "format": {"type": "json_schema", "schema": QUESTION_SCHEMA},
+            },
+            messages=[{"role": "user", "content": content}],
+        )
+        text = next(b.text for b in resp.content if b.type == "text")
+        question = str(json.loads(text)["question"]).strip()
+        problems = question_problems(question, keys)
+        if not problems:
+            return question
+    raise RuntimeError(f"no valid question after 3 attempts: {problems}")
 
 
 def _quotable(d: DocSpec) -> bool:
@@ -98,21 +122,58 @@ def _jobs() -> list[Job]:
     return jobs
 
 
+def _prompt(job: Job) -> str:
+    _, company, keys, facts, _ = job
+    return PROMPT.format(
+        company=company,
+        keys=", ".join(keys),
+        facts="\n".join(f"- {strip_brackets(f)}" for f in facts),
+    )
+
+
+def _job_for(item: dict[str, Any]) -> Job:
+    """Rebuild the generation job behind an existing golden item (same keys, same doc)."""
+    keys = [k for group in item["must_include"] for k in group]
+    return next(
+        j
+        for j in _jobs()
+        if j[0] == item["tenant_id"] and j[2] == keys and j[4] == item["expected_doc_ids"][0]
+    )
+
+
+def fix() -> int:
+    """Regenerate only the questions that fail question_problems(); keep ids and expectations."""
+    load_dotenv()
+    client = anthropic.Anthropic()
+    path = SETS_DIR / "golden.jsonl"
+    items = [json.loads(line) for line in path.read_text("utf-8").splitlines()]
+    flawed = [
+        i
+        for i in items
+        if question_problems(i["question"], [k for g in i["must_include"] for k in g])
+    ]
+    print(f"Regenerating {len(flawed)} flawed questions...")
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        new = list(pool.map(lambda i: _ask(client, _prompt(_job_for(i)), _keys(i)), flawed))
+    for item, question in zip(flawed, new, strict=True):
+        item["question"] = question
+    path.write_text("".join(json.dumps(i, ensure_ascii=False) + "\n" for i in items), "utf-8")
+    print("Fixed:", ", ".join(i["id"] for i in flawed))
+    return 0
+
+
+def _keys(item: dict[str, Any]) -> list[str]:
+    return [k for g in item["must_include"] for k in g]
+
+
 def build() -> list[dict[str, Any]]:
     load_dotenv()
     client = anthropic.Anthropic()
     jobs = _jobs()
 
     def make(job: Job) -> dict[str, Any]:
-        tid, company, keys, facts, doc = job
-        q = _ask(
-            client,
-            PROMPT.format(
-                company=company,
-                keys=", ".join(keys),
-                facts="\n".join(f"- {strip_brackets(f)}" for f in facts),
-            ),
-        )
+        tid, _, keys, _, doc = job
+        q = _ask(client, _prompt(job), keys)
         return {
             "tenant_id": tid,
             "question": q,
@@ -142,6 +203,8 @@ def build() -> list[dict[str, Any]]:
 
 
 def main() -> int:
+    if "--fix" in sys.argv:
+        return fix()
     items = build()
     path = SETS_DIR / "golden.jsonl"
     path.write_text("".join(json.dumps(i, ensure_ascii=False) + "\n" for i in items), "utf-8")

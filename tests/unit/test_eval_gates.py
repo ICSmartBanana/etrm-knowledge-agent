@@ -58,6 +58,27 @@ def test_content_checks_alternatives() -> None:
     assert not content_checks(item, "Up to 24.", "answered")["must_not_include"]
 
 
+def test_every_golden_question_is_clean() -> None:
+    """Catches generator drafting text ('Wait, ...'), multi-line output and answer leaks."""
+    from evals.items import golden, question_problems
+
+    bad = {
+        i.id: p
+        for i in golden()
+        if (p := question_problems(i.question, [k for g in i.must_include for k in g]))
+    }
+    assert bad == {}
+
+
+def test_question_rules_reject_drafting_text() -> None:
+    from evals.items import question_problems
+
+    assert question_problems("When is it due?", ["13:00"]) == []
+    assert question_problems("When is it due?\n\nWait, that is fine.", ["13:00"])
+    assert question_problems("Is it due at 13:00?", ["13:00"])
+    assert question_problems("Is there a waiting period?", []) == []  # 'waiting' is not 'wait'
+
+
 def test_sets_meet_brief_minimums() -> None:
     items = all_items()
     for t in ("clan_a", "clan_b", "clan_c"):

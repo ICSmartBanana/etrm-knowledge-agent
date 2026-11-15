@@ -105,26 +105,30 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
-        id: changes
         with:
-          filters: |
-            image:
-              - Dockerfile
-              - .dockerignore
-              - pyproject.toml
-              - uv.lock
-              - .github/workflows/ci.yml
+          fetch-depth: 0
+      - name: Did the image inputs change?
+        id: changes
+        env:
+          BASE: ${{ github.base_ref }}
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "image=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if git diff --name-only "origin/$BASE...HEAD"              | grep -qE '^(Dockerfile|\.dockerignore|pyproject\.toml|uv\.lock|\.github/workflows/ci\.yml)$'; then
+            echo "image=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "image=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Build image
-        if: steps.changes.outputs.image == 'true' || github.event_name == 'push'
+        if: steps.changes.outputs.image == 'true'
         run: docker build -t etrm-agent:ci .
       - name: Trivy (HIGH/CRITICAL with a fix available)
-        if: steps.changes.outputs.image == 'true' || github.event_name == 'push'
+        if: steps.changes.outputs.image == 'true'
         run: |
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.67.2 \
-            image --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 etrm-agent:ci
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.67.2             image --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 etrm-agent:ci
       - name: Skipped
-        if: steps.changes.outputs.image != 'true' && github.event_name != 'push'
+        if: steps.changes.outputs.image != 'true'
         run: echo "Image inputs unchanged in this PR; Trivy runs on main and weekly."
 
   governance:

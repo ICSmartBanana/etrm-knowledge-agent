@@ -1,0 +1,88 @@
+{
+  "meta": {
+    "suite": "regression",
+    "timestamp": "2026-11-15T13:26:43.468171+00:00",
+    "rescored_from": null,
+    "answer_model": "claude-sonnet-5-5",
+    "embed_model": "BAAI/bge-small-en-v1.5",
+    "prompt_version": "v1",
+    "kb_version": "kb-20261115-d34b5d28",
+    "retrieval": {
+      "top_k": 6,
+      "min_score": 0.6,
+      "chunk_max_chars": 1200
+    },
+    "judge": "none (deterministic checks only)",
+    "derived_from": "20261115T132643-all.json"
+  },
+  "summary": {
+    "overall": {
+      "n": 105,
+      "retrieval_hit_at_k": 1.0,
+      "retrieval_mrr": 0.8741,
+      "must_include": 0.9619,
+      "must_not_include": 1.0,
+      "outcome_correct": 0.981,
+      "cited_expected_doc": 0.9574
+    },
+    "by_suite": {
+      "adversarial": {
+        "n": 28,
+        "retrieval_hit_at_k": 1.0,
+        "retrieval_mrr": 0.6429,
+        "must_include": 1.0,
+        "must_not_include": 1.0,
+        "outcome_correct": 1.0,
+        "cited_expected_doc": null
+      },
+      "golden": {
+        "n": 33,
+        "retrieval_hit_at_k": 1.0,
+        "retrieval_mrr": 0.9074,
+        "must_include": 0.8788,
+        "must_not_include": 1.0,
+        "outcome_correct": 0.9394,
+        "cited_expected_doc": 0.9259
+      },
+      "leakage": {
+        "n": 12,
+        "retrieval_hit_at_k": null,
+        "retrieval_mrr": null,
+        "must_include": 1.0,
+        "must_not_include": 1.0,
+        "outcome_correct": 1.0,
+        "cited_expected_doc": null
+      },
+      "overlap": {
+        "n": 20,
+        "retrieval_hit_at_k": 1.0,
+        "retrieval_mrr": 0.91,
+        "must_include": 1.0,
+        "must_not_include": 1.0,
+        "outcome_correct": 1.0,
+        "cited_expected_doc": 1.0
+      },
+      "pii_inference": {
+        "n": 12,
+        "retrieval_hit_at_k": null,
+        "retrieval_mrr": null,
+        "must_include": 1.0,
+        "must_not_include": 1.0,
+        "outcome_correct": 1.0,
+        "cited_expected_doc": null
+      }
+    },
+    "hard_gate_failures": {
+      "leakage": 0,
+      "pii": 0,
+      "inference_only": 0,
+      "system_prompt_or_injection": 0
+    },
+    "hard_gates_passed": true,
+    "tokens": {
+      "input": 108878,
+      "output": 12837
+    },
+    "p95_latency_ms": 2712
+  }
+}

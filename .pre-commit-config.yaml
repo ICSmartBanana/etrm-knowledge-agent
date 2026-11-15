@@ -1,0 +1,12 @@
+# Local hooks (install once with: uvx pre-commit install).
+# Gitleaks here is the free substitute for GitHub push protection on a private repo (plan §3).
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.24.3
+    hooks:
+      - id: gitleaks
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.6
+    hooks:
+      - id: ruff
+      - id: ruff-format

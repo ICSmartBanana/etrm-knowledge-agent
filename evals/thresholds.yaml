@@ -1,0 +1,25 @@
+# Eval floors (brief §5). Hard gates (leakage, PII, inference-only, system prompt/injection)
+# are always zero-tolerance and are not configured here.
+#
+# Each floor started at the iteration-1 baseline minus a small budget for model
+# non-determinism (about 2-5 items). RATCHET ONLY: raise a floor when a merged iteration beats
+# it; never lower one. Changing this file needs a CHANGELOG entry (governance check).
+suites:
+  regression:  # PR gate, 105 items
+    baseline: evals/baselines/iteration-1-regression.json
+    floors:
+      retrieval_hit_at_k: 0.98   # baseline 1.000
+      retrieval_mrr: 0.85        # baseline 0.874
+      must_include: 0.91         # baseline 0.962
+      must_not_include: 1.00     # baseline 1.000; any blended or forbidden fact fails
+      outcome_correct: 0.95      # baseline 0.981
+      cited_expected_doc: 0.91   # baseline 0.957
+  all:  # weekly full suite, 242 items
+    baseline: evals/baselines/iteration-1.json
+    floors:
+      retrieval_hit_at_k: 0.98   # baseline 1.000
+      retrieval_mrr: 0.88        # baseline 0.906
+      must_include: 0.92         # baseline 0.959
+      must_not_include: 1.00     # baseline 1.000
+      outcome_correct: 0.96      # baseline 0.992
+      cited_expected_doc: 0.94   # baseline 0.984

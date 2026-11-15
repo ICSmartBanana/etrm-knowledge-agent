@@ -4,6 +4,22 @@ Every change to prompts, models, retrieval settings or knowledge bases gets an e
 
 ## [Unreleased]
 
+### Added (M3 CI/CD)
+- GitHub Actions:
+  - `ci.yml`: lint, types, tests with Postgres and isolation tests, Bandit, pip-audit, Semgrep, Gitleaks, Trivy, governance check, generated docs
+  - `eval.yml`: regression eval gate with a PR score comment
+  - `weekly.yml`: full eval suite and image scan
+- `evals/thresholds.yaml`: metric floors (baseline minus a small budget, ratchet only) and `evals/compare.py`, which gates a run and writes the score table.
+- `evals/baselines/iteration-1-regression.json`: the regression-suite baseline, derived from the iteration-1 full run (same answers, no new model calls).
+- `scripts/governance_check.py` and a PR template: governed areas need CHANGELOG (and, for data, data-register) updates.
+- `scripts/gen_docs.py`: model card, data-source register, eval report and changelog built from the repo.
+- `.pre-commit-config.yaml` with gitleaks and ruff hooks.
+
+### Changed
+- The Postgres healthcheck now waits on TCP, so `docker compose up --wait` returns only after `db/init` has finished.
+- The UI rejects a non-http(s) `ETRM_API_URL` (Bandit B310).
+- The image installs Debian security updates on top of `python:3.12-slim`, which clears two HIGH zlib CVEs (CVE-2026-76844, CVE-2026-85091) that Trivy flagged.
+
 ### Fixed
 - Golden eval set: regenerated 24 of 131 questions that contained the generator's drafting text (13 also contained the expected answer). Same ids, expected values and source docs. The question generator now uses structured output, and a test rejects malformed golden questions. The iteration-1 baseline was re-run: hard gates still 0, golden exact-value accuracy 0.93 → 0.92.
 

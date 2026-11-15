@@ -4,6 +4,9 @@ Every change to prompts, models, retrieval settings or knowledge bases gets an e
 
 ## [Unreleased]
 
+### Fixed
+- Golden eval set: regenerated 24 of 131 questions that contained the generator's drafting text (13 also contained the expected answer). Same ids, expected values and source docs. The question generator now uses structured output, and a test rejects malformed golden questions. The iteration-1 baseline was re-run: hard gates still 0, golden exact-value accuracy 0.93 → 0.92.
+
 ### Added
 - Langfuse Cloud (EU) trace export alongside the local JSONL traces: retrieval, generation (tokens, USD cost) and guard steps, PII-masked, with no document text, and only the app's own spans exported.
 - Cost per query (`cost_usd`) in every trace, from pinned prices in `app/config.py`.

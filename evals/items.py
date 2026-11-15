@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -20,6 +21,22 @@ LONG_PADDING = (
 ) * 6
 
 NOT_ANSWERED = ["no_information", "out_of_scope", "declined"]
+_WAIT_RE = re.compile(r"\bwait\b", re.IGNORECASE)
+
+
+def question_problems(question: str, keys: list[str]) -> list[str]:
+    """Quality rules for a generated golden question. Empty list means it is acceptable."""
+    problems = []
+    if "\n" in question:
+        problems.append("contains a line break (more than just the question)")
+    if _WAIT_RE.search(question):
+        problems.append("contains drafting text such as 'Wait'")
+    if len(question) > 300:
+        problems.append("longer than 300 characters")
+    if not question.rstrip().endswith("?"):
+        problems.append("does not end with a question mark")
+    problems += [f"contains the answer value {k!r}" for k in keys if k.lower() in question.lower()]
+    return problems
 
 
 @dataclass(frozen=True)

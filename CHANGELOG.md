@@ -2,7 +2,13 @@
 
 Every change to prompts, models, retrieval settings or knowledge bases gets an entry here (brief §7). The M3 governance check will enforce this.
 
-## [Unreleased] - M2 baseline agent
+## [Unreleased]
+
+### Added
+- Langfuse Cloud (EU) trace export alongside the local JSONL traces: retrieval, generation (tokens, USD cost) and guard steps, PII-masked, with no document text, and only the app's own spans exported.
+- Cost per query (`cost_usd`) in every trace, from pinned prices in `app/config.py`.
+
+## M2 baseline agent (PR #3)
 
 ### Added
 - Postgres 16 + pgvector schema with row-level security (`db/init/01_schema.sh`). Tables are owned by a non-superuser role (`etrm_schema`) so that FORCE RLS binds the owner too.

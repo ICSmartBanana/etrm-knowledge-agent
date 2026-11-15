@@ -1,0 +1,35 @@
+# Overlap set: same question, different correct answer per client (brief §5).
+# must_include: list of groups; each group is a list of alternatives, at least one must appear.
+# must_not_include: strings that would mean the agent used another client's facts.
+gas_scheduling:
+  - question: What is the day-ahead gas nomination deadline?
+    clan_a: {must_include: [["13:00"]], must_not_include: ["14:30"], expected_doc_ids: [a-002]}
+    clan_b: {must_include: [["14:30"]], must_not_include: ["13:00"], expected_doc_ids: [b-002]}
+  - question: What units are our gas nominations expressed in?
+    clan_a: {must_include: [["kWh"]], must_not_include: ["therm"], expected_doc_ids: [a-002]}
+    clan_b: {must_include: [["therm"]], must_not_include: ["kWh"], expected_doc_ids: [b-002]}
+  - question: Until what time on the gas day can we make within-day gas changes?
+    clan_a: {must_include: [["03:00"]], must_not_include: ["01:00"], expected_doc_ids: [a-003]}
+    clan_b: {must_include: [["01:00"]], must_not_include: ["03:00"], expected_doc_ids: [b-003]}
+  - question: How many within-day gas changes or renominations are allowed per gas day?
+    clan_a: {must_include: [["24"]], must_not_include: ["four within-day"], expected_doc_ids: [a-003]}
+    clan_b: {must_include: [["four", "4"]], must_not_include: ["24 renominations"], expected_doc_ids: [b-003]}
+  - question: How do our gas nominations get submitted?
+    clan_a: {must_include: [["NomBridge"]], must_not_include: ["SFTP"], expected_doc_ids: [a-002]}
+    clan_b: {must_include: [["SFTP", "scheduling agent"]], must_not_include: ["NomBridge"], expected_doc_ids: [b-002]}
+settlement:
+  - question: What are our standard payment terms?
+    clan_b: {must_include: [["net 30"]], must_not_include: ["bill of lading"], expected_doc_ids: [b-004]}
+    clan_c: {must_include: [["net 20"]], must_not_include: ["5th business day"], expected_doc_ids: [c-002]}
+  - question: Do we net payments with counterparties, and if so above what threshold?
+    clan_b: {must_include: [["250,000"]], must_not_include: ["gross settlement"], expected_doc_ids: [b-005]}
+    clan_c: {must_include: [["gross settlement", "not enabled", "not used"]], must_not_include: ["250,000"], expected_doc_ids: [c-003]}
+  - question: Within how long must invoice disputes be raised?
+    clan_b: {must_include: [["10 business days"]], must_not_include: ["15 calendar days"], expected_doc_ids: [b-005]}
+    clan_c: {must_include: [["15 calendar days"]], must_not_include: ["10 business days"], expected_doc_ids: [c-003]}
+  - question: What currency are our invoices issued in?
+    clan_b: {must_include: [["USD"]], must_not_include: ["BRL"], expected_doc_ids: [b-004]}
+    clan_c: {must_include: [["USD"], ["BRL"]], must_not_include: [], expected_doc_ids: [c-002]}
+  - question: When are our invoices generated?
+    clan_b: {must_include: [["5th business day", "fifth business day"]], must_not_include: ["bill of lading"], expected_doc_ids: [b-004]}
+    clan_c: {must_include: [["bill of lading"]], must_not_include: ["5th business day"], expected_doc_ids: [c-002]}

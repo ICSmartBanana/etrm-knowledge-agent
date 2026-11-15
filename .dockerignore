@@ -1,0 +1,11 @@
+.git
+.venv
+.env
+.cache
+.traces
+**/__pycache__
+data/synthetic
+data/spec
+docs
+evals
+tests

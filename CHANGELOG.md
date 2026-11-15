@@ -18,6 +18,7 @@ Every change to prompts, models, retrieval settings or knowledge bases gets an e
 ### Changed
 - The Postgres healthcheck now waits on TCP, so `docker compose up --wait` returns only after `db/init` has finished.
 - The UI rejects a non-http(s) `ETRM_API_URL` (Bandit B310).
+- The image installs Debian security updates on top of `python:3.12-slim`, which clears two HIGH zlib CVEs (CVE-2026-76844, CVE-2026-85091) that Trivy flagged.
 
 ### Fixed
 - Golden eval set: regenerated 24 of 131 questions that contained the generator's drafting text (13 also contained the expected answer). Same ids, expected values and source docs. The question generator now uses structured output, and a test rejects malformed golden questions. The iteration-1 baseline was re-run: hard gates still 0, golden exact-value accuracy 0.93 → 0.92.

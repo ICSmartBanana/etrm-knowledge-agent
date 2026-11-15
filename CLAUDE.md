@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-Milestones M0 (research, ADR), M1 (synthetic data), M2 (baseline agent, Langfuse tracing) and M3 (CI/CD gates) are done. M4 (governance pack in `docs/governance/`, then the `agent-standards` repo) is in progress. Scope comes from:
+Milestones M0 (research, ADR), M1 (synthetic data), M2 (baseline agent, Langfuse tracing) and M3 (CI/CD gates) are done. M4's build work is done (governance pack in `docs/governance/`, the `agent-standards` repo, and `agent-project-template`); it is awaiting Parag's review and sign-off. Scope comes from:
 
 - `docs/brief/requirements-v0.1.docx`: the requirements brief (FR1–FR7, eval sets, CI gates, governance pack). It's the source of truth for scope.
 - `docs/brief/implementation-plan.md`: the milestones M0–M6 with "done when" criteria, and the cost-control rules.
@@ -127,4 +127,4 @@ These come from the brief and the plan. A change that weakens any of them is a d
 ## Related repos
 
 - `agent-standards`: a separate repo for the Agent Building Standards Pack (principles, review gates, Claude Code skills). It lives outside this repo by design, so don't put standards-pack content here.
-- `agent-project-template`: will be extracted from this repo at the end of M4. Don't create it earlier.
+- `agent-project-template` (ICSmartBanana/agent-project-template): a GitHub template repo extracted from this one, with tenants in `data/tenants.yaml` and a generic sample corpus. A fix to shared machinery here (isolation, guard, eval gates, CI, governance checks) usually belongs there too; port it in a separate PR.

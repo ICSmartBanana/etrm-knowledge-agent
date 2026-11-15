@@ -33,11 +33,13 @@ uv run python -m datagen.generate         # generate only missing corpus docs (c
 
 Use `127.0.0.1`, not `localhost`, for the database: on this Windows machine `localhost` tries IPv6 first and each connect stalls. Database schema changes go in `db/init/01_schema.sh`, which runs only on an empty volume, so after changing it run `docker compose down -v`, bring the db back up, then re-ingest. Keep shell scripts LF (`.gitattributes`), or the container can't run them.
 
-Still to come: Bandit, pip-audit, Gitleaks, Promptfoo, Ragas, CI workflows (M3), and Langfuse export.
+Still to come: Bandit, pip-audit, Gitleaks, Promptfoo, Ragas, CI workflows (M3), and Langfuse dashboards and alerts.
 
 ## How a request flows (M2)
 
-`app/api/main.py` (session token → `TenantContext`) → `app/agent.py:answer_question` → `app/retrieval.py` (role `etrm_app`, `SET LOCAL app.tenant_id` in the transaction, plus a `tenant_id = ANY(...)` pre-filter) → abstain if the best score is below `RETRIEVAL.min_score` → drop `pii`-class chunks → `public`/`insight` chunks go in `<documents>`, `inference_only` in `<internal_context>` → `app/llm.py` (Sonnet, structured JSON output, server-side refusal fallback) → `app/guard.py` (PII mask, inference-only and system-prompt n-gram blocks, citation filter) → `app/tracing.py` (PII-masked JSONL in `.traces/`).
+`app/api/main.py` (session token → `TenantContext`) → `app/agent.py:answer_question` → `app/retrieval.py` (role `etrm_app`, `SET LOCAL app.tenant_id` in the transaction, plus a `tenant_id = ANY(...)` pre-filter) → abstain if the best score is below `RETRIEVAL.min_score` → drop `pii`-class chunks → `public`/`insight` chunks go in `<documents>`, `inference_only` in `<internal_context>` → `app/llm.py` (Sonnet, structured JSON output, server-side refusal fallback) → `app/guard.py` (PII mask, inference-only and system-prompt n-gram blocks, citation filter) → `app/tracing.py` (PII-masked JSONL in `.traces/`, plus Langfuse Cloud when `LANGFUSE_*` keys are set).
+
+Langfuse export (`app/tracing.py`): one trace per request with `retrieval`, `answer` (generation: model, tokens, USD cost) and `output_guard` steps, tagged with the client id and outcome. It sends doc ids and scores but never document text. A Langfuse `mask` hook re-masks PII, and `should_export_span=is_langfuse_span` stops other OpenTelemetry spans (the Anthropic SDK auto-instruments itself) from leaving the machine. Export failures are logged and never break an answer.
 
 Database roles: `etrm_owner` is the image's superuser, which bypasses RLS, so it is for admin only. `etrm_schema` owns the tables and is bound by FORCE RLS. `etrm_app` is the API. `etrm_ingest` has BYPASSRLS and is never used by the API.
 

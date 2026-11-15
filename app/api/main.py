@@ -9,6 +9,8 @@ must carry that token; the tenant comes only from the session, never from the re
 from __future__ import annotations
 
 import secrets
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from typing import Annotated, Literal
 
 from fastapi import Depends, FastAPI, Header, HTTPException
@@ -16,14 +18,21 @@ from pydantic import BaseModel, Field
 
 from app.agent import answer_question
 from app.tenancy import CLIENT_TENANTS, DISPLAY_NAMES, TenantContext
-from app.tracing import record
+from app.tracing import flush, record
 
 AI_DISCLOSURE = (
     "You are chatting with an AI assistant. Answers are generated from your organisation's "
     "documents and can be wrong; check important details before acting on them."
 )
 
-app = FastAPI(title="ETRM knowledge agent (POC)")
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    yield
+    flush()  # send any buffered Langfuse traces before the process exits
+
+
+app = FastAPI(title="ETRM knowledge agent (POC)", lifespan=lifespan)
 _sessions: dict[str, str] = {}  # token -> tenant_id (in memory; POC only)
 
 

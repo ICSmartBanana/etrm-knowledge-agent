@@ -8,6 +8,7 @@ dependencies = [
     "anthropic>=1.0",
     "fastapi>=0.115",
     "fastembed>=0.4",
+    "langfuse>=3.0",
     "pgvector>=0.3",
     "psycopg-pool>=3.2",
     "psycopg[binary]>=3.2",

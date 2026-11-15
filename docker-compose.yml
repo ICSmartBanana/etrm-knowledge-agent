@@ -27,6 +27,10 @@ services:
       ETRM_APP_PASSWORD: ${ETRM_APP_PASSWORD}
       ETRM_DB_HOST: db
       ETRM_DB_PORT: "5432"
+      LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY:-}
+      LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY:-}
+      LANGFUSE_HOST: ${LANGFUSE_HOST:-https://cloud.langfuse.com}
+      ETRM_ENV: docker
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:

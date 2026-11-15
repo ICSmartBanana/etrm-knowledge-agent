@@ -15,6 +15,9 @@ load_dotenv(REPO_ROOT / ".env")
 ANSWER_MODEL = "claude-sonnet-5-5"
 EMBED_MODEL = "BAAI/bge-small-en-v1.5"
 PROMPT_VERSION = "v1"
+# USD per million (input, output) tokens for ANSWER_MODEL, for the cost-per-query metric.
+# Check anthropic.com/pricing when changing the model.
+ANSWER_PRICE_PER_MTOK = (2.00, 10.00)
 
 
 @dataclass(frozen=True)

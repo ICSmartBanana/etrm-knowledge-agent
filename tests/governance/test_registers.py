@@ -94,6 +94,15 @@ def test_every_brief_region_is_in_the_regulatory_register() -> None:
     assert [r for r in REGIONS if r not in regions] == []
 
 
+@pytest.mark.parametrize("doc", sorted(GOV.glob("*.md")), ids=lambda p: p.name)
+def test_relative_links_in_the_pack_resolve(doc: Path) -> None:
+    # gen_docs.py ships docs/ in the repo layout, so links that resolve here resolve in the
+    # governance-docs artifact too.
+    links = re.findall(r"\]\(([^)#\s]+)(?:#[^)]*)?\)", doc.read_text("utf-8"))
+    local = [link for link in links if not re.match(r"[a-z]+:", link)]
+    assert [link for link in local if not (doc.parent / link).exists()] == []
+
+
 @pytest.mark.parametrize("row", REGULATIONS, ids=[r[0] for r in REGULATIONS])
 def test_regulation_has_valid_review_dates(row: list[str]) -> None:
     last, nxt = date.fromisoformat(row[8]), date.fromisoformat(row[9])

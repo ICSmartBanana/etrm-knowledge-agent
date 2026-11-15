@@ -12,7 +12,7 @@ The POC's governance documents (brief §8), aligned to the NIST AI RMF and struc
 | Manage | [Human-oversight note](human-oversight.md): who reviews what, and the escalation path | Monthly; after incidents |
 | Manage | [Incident process](incident-process.md): report, contain, notify, review | After every incident; quarterly |
 
-**Generated facts.** `scripts/gen_docs.py` builds the model card facts, data-register counts, eval report and changelog from the repo on every CI run. It ships them, together with this folder, as the `governance-docs` artifact.
+**Generated facts.** `scripts/gen_docs.py` builds the model card facts, data-register counts, eval report and changelog from the repo on every CI run. It ships them as the `governance-docs` artifact, together with a copy of `docs/` in the repo layout, so the links between documents keep working there.
 
 **Checks in CI:**
 

@@ -121,7 +121,7 @@ def model_card() -> str:
         "## Known limitations",
         "",
         "Intended use, out-of-scope use and the reasoning behind these limits: "
-        "`governance/model-card.md` in this artifact.",
+        "`docs/governance/model-card.md` in this artifact.",
         "",
         *[f"- {limit}" for limit in KNOWN_LIMITS],
         "",
@@ -192,10 +192,11 @@ def main() -> int:
     (args.out / "data-source-register.md").write_text(data_register(), "utf-8")
     (args.out / "eval-report.md").write_text(eval_report(), "utf-8")
     shutil.copy(ROOT / "CHANGELOG.md", args.out / "CHANGELOG.md")
-    # The hand-written governance pack travels with the generated facts, so one artifact holds
-    # the whole set a reviewer needs.
-    shutil.copytree(ROOT / "docs" / "governance", args.out / "governance", dirs_exist_ok=True)
-    print(f"Wrote 4 documents and the governance pack to {args.out}")
+    # The hand-written docs travel with the generated facts, so one artifact holds the whole set
+    # a reviewer needs. They keep the repo layout (docs/... next to CHANGELOG.md), so the pack's
+    # relative links to research notes, ADRs, eval reports and the changelog still resolve.
+    shutil.copytree(ROOT / "docs", args.out / "docs", dirs_exist_ok=True)
+    print(f"Wrote 4 documents and the docs folder to {args.out}")
     return 0
 
 

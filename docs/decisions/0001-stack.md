@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | **Proposed, awaiting Parag's approval** (M0 is done once it's approved) |
+| Status | **Accepted** (approved by Parag, 15 Nov 2026) |
 | Date | 15 Nov 2026 |
 | Inputs | [Requirements brief v0.1](../brief/requirements-v0.1.docx), [implementation plan](../brief/implementation-plan.md) §5, [M0 research notes](../research/README.md) |
 
@@ -69,4 +69,4 @@ Prices weren't verified in M0, so the budget is set as **caps**, not estimates. 
 
 | Role | Name | Date | Decision |
 |---|---|---|---|
-| Approver | Parag | | |
+| Approver | Parag | 15 Nov 2026 | Approved |

@@ -76,3 +76,19 @@ def test_contact_lists_never_reach_the_model(stub: StubLLM) -> None:
     )
     _, messages = stub.calls[-1]
     assert 'id="a-013"' not in messages[-1]["content"]
+
+
+def test_abstains_without_calling_the_model_when_retrieval_is_weak(
+    stub: StubLLM, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Cite or abstain (FR3): below the score threshold the agent says it doesn't know and the
+    # model is never asked, so it has nothing to confabulate from.
+    from dataclasses import replace
+
+    monkeypatch.setattr(agent_mod, "RETRIEVAL", replace(agent_mod.RETRIEVAL, min_score=1.01))
+    resp = client.post(
+        "/chat", json={"question": "What is the nomination deadline?"}, headers=_login("clan_a")
+    ).json()
+    assert resp["outcome"] == "no_information"
+    assert resp["disclosure"] == AI_DISCLOSURE
+    assert stub.calls == []

@@ -1,0 +1,84 @@
+tenant_id: consultancy
+company:
+  name: Meridian ETRM Consulting
+  profile: >-
+    A fictional consultancy that implements and supports ETRM and CTRM platforms. Its
+    knowledge base holds generic playbooks and best practices. It contains no client-specific
+    facts and is visible to every client.
+  platform: none (vendor-neutral guidance)
+canary: CANARY-CONSULTANCY-5J1P8L4Z
+pii: []
+docs:
+  - id: m-001
+    title: ETRM implementation playbook
+    doc_type: playbook
+    data_class: public
+    topic: implementation
+    canary: true
+    facts:
+      - "A typical implementation runs in [[five phases]]: discovery, design, build, test and cutover."
+      - "Freeze the requirements baseline at the end of design."
+      - "Run at least [[two full dress rehearsals]] before cutover."
+  - id: m-002
+    title: ETRM upgrade checklist
+    doc_type: checklist
+    data_class: public
+    topic: upgrades
+    facts:
+      - "Take a full database backup and record the current version before any upgrade."
+      - "Regression-test end-of-day, invoicing and scheduling jobs in a copy of production."
+      - "Keep a rollback window of at least [[48 hours]]."
+  - id: m-003
+    title: Gas scheduling concepts (vendor-neutral)
+    doc_type: guide
+    data_class: public
+    topic: gas scheduling
+    overlap: gas_scheduling
+    facts:
+      - "A gas day usually starts at a fixed local time, which varies by market and hub."
+      - "Nomination deadlines, units and renomination rules differ by hub and by contract, so always check the client's own procedure."
+      - "Common failure points are manual edits after the batch run and missing confirmations."
+  - id: m-004
+    title: Settlement and invoicing best practices
+    doc_type: guide
+    data_class: public
+    topic: settlement
+    overlap: settlement
+    facts:
+      - "Payment terms, netting rules and dispute windows are set by each client's contracts, not by the platform."
+      - "Reconcile confirmations against invoices before release."
+      - "Separate the duties of invoice preparation and approval."
+  - id: m-005
+    title: End-of-day batch best practices
+    doc_type: guide
+    data_class: public
+    topic: operations
+    facts:
+      - "Order jobs so that price import finishes before mark-to-market."
+      - "Every job should have a documented retry and an owner."
+      - "Alert on batch overruns rather than waiting for users to notice."
+  - id: m-006
+    title: Data migration checklist
+    doc_type: checklist
+    data_class: public
+    topic: implementation
+    facts:
+      - "Migrate static data first: counterparties, books, products, then trades."
+      - "Reconcile trade counts and total notional after each load."
+      - "Keep migration scripts under version control."
+  - id: m-007
+    title: ETRM testing strategy guide
+    doc_type: guide
+    data_class: public
+    topic: testing
+    facts:
+      - "Use a frozen, anonymised copy of production data for regression tests."
+      - "Automate the end-of-day, invoicing and scheduling regression packs."
+  - id: m-008
+    title: ETRM glossary
+    doc_type: glossary
+    data_class: public
+    topic: reference
+    facts:
+      - "Defines terms including gas day, nomination, renomination, gate closure, mark-to-market, netting, demurrage, laytime and bill of lading."
+derived: []

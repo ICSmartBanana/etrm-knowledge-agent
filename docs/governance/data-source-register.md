@@ -1,0 +1,67 @@
+# Data-source register
+
+| | |
+|---|---|
+| Version | 0.1 (15 Nov 2026, milestone M1) |
+| Owner | Parag (POC owner) |
+| Review | On every change to `data/spec/` or `data/synthetic/`, and monthly with the risk register |
+
+All four knowledge bases are **synthetic**. No real client, company or personal data is used. Company, platform, hub and pipeline names are fictional. Emails use the reserved `.example` domain. Phone numbers are from ranges reserved for fiction.
+
+## Knowledge bases
+
+| Knowledge base | `tenant_id` | Source | Owner | Docs | PII present | Visible to | Retention | Last update |
+|---|---|---|---|---|---|---|---|---|
+| Aldermoor Energy (Clan A) | `clan_a` | Generated from `data/spec/clan_a.yaml` by `datagen` with `claude-haiku-5-5` | Parag | 14 | Yes, seeded (8 values) | Clan A users only | Life of the POC; deletable by removing `data/synthetic/clan_a/` and its rows | 15 Nov 2026 |
+| Brightwater Refined Products (Clan B) | `clan_b` | `data/spec/clan_b.yaml`, same generator | Parag | 14 | Yes, seeded (8 values) | Clan B users only | As above | 15 Nov 2026 |
+| Cerrado Agri Commodities (Clan C) | `clan_c` | `data/spec/clan_c.yaml`, same generator | Parag | 13 | Yes, seeded (7 values) | Clan C users only | As above | 15 Nov 2026 |
+| Meridian ETRM Consulting (consultancy) | `consultancy` | `data/spec/consultancy.yaml`, same generator | Parag | 8 | No | All clients | As above | 15 Nov 2026 |
+
+Client data is never used to train or fine-tune a model. The generator sends only the spec (fictional facts) to the Anthropic API.
+
+## Data classes and allowed use
+
+Each document carries one `data_class` in its front matter. The class sets what the agent may do with it.
+
+| Data class | Allowed use | Agent may quote? | Controls | Docs |
+|---|---|---|---|---|
+| `public` | Answering and citing | Yes | Tenant filter | 40 (incl. 3 near-duplicates and the 8 consultancy docs) |
+| `insight` | Paraphrase conclusions, with citation | Paraphrase only | Tenant filter; output guard on verbatim overlap (planned) | 3 |
+| `inference_only` | Reasoning only | **No** | Separate tagged context block; n-gram overlap guard; PII and inference-only eval set (hard gate) | 3 |
+| `pii` | Not answerable | **No** | Masked at ingestion; PII registry match in the output guard; PII eval set (hard gate) | 3 |
+
+Some `public` documents also contain seeded PII (a contact named in a procedure, a desk phone number). That is deliberate: it tests that **ingestion masks PII** in otherwise quotable text. The registry of every seeded value is `data/pii_registry.json`.
+
+## Messy data (deliberate)
+
+| Kind | Clan A | Clan B | Clan C | Purpose |
+|---|---|---|---|---|
+| Superseded policy version | a-009 → a-010 | b-008 → b-009 | c-008 → c-009 | The agent must prefer `status: current` |
+| Contradictory older doc | a-005 vs a-002 | b-010 vs b-004 | c-004 vs c-002 | The agent must prefer the current, authoritative doc or flag the conflict |
+| Near-duplicate | a-014 (of a-008) | b-014 (of b-005) | c-013 (of c-007) | Tests retrieval de-duplication |
+| Prompt injection | | b-006 (`INJECTION-TEST-0001`) | | The adversarial set; the agent must ignore it |
+| Cross-tenant canary | a-002 | b-002 | c-002 | Leakage tests; also `m-001` for the consultancy |
+
+**Overlap topics:** gas scheduling between A and B (deadlines 13:00 vs 14:30 on D-1, kWh vs therms, direct nominations vs a scheduling agent) and settlement between B and C (net 30 vs net 20, netting vs gross settlement, 10 business days vs 15 calendar days to dispute). The consultancy holds vendor-neutral guidance on both topics, with no client values.
+
+## Human spot-check (brief §12, M1 "done when")
+
+Check a sample of at least 20%: **10 of 49 docs**. Confirm that each one reads plausibly, that its facts match the spec, and that it has no invented people or contact details.
+
+| Doc | Why it's in the sample | Checked by | Date | Result |
+|---|---|---|---|---|
+| a-002 | Overlap (gas scheduling), canary, PII in a public doc | Parag | 15 Nov 2026 | Pass (no issues raised) |
+| a-011 | Inference-only | Parag | 15 Nov 2026 | Pass (no issues raised) |
+| a-013 | PII contact list | Parag | 15 Nov 2026 | Pass (no issues raised) |
+| b-002 | Overlap (gas scheduling), canary | Parag | 15 Nov 2026 | Pass (no issues raised) |
+| b-004 | Overlap (settlement) | Parag | 15 Nov 2026 | Pass (no issues raised) |
+| b-006 | Prompt injection | Parag | 15 Nov 2026 | Pass (no issues raised) |
+| b-010 | Contradiction and the cross-tenant trap | Parag | 15 Nov 2026 | Pass (no issues raised) |
+| c-002 | Overlap (settlement), canary | Parag | 15 Nov 2026 | Pass (no issues raised) |
+| c-009 | Current policy version | Parag | 15 Nov 2026 | Pass (no issues raised) |
+| m-003 | Consultancy guide on an overlap topic | Parag | 15 Nov 2026 | Pass (no issues raised) |
+
+## Limitations
+
+- About 13 docs per client, below the plan's estimate of 15–25. That's enough for the golden set (at least 40 questions per client, about 3 per doc), but thin for retrieval-quality work in M5. More docs can be added to the specs then.
+- Generated by an LLM, so the prose is cleaner than real client documents. The messy-data set above partly makes up for this.

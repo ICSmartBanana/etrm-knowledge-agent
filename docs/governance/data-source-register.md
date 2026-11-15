@@ -50,16 +50,16 @@ Check a sample of at least 20%: **10 of 49 docs**. Confirm that each one reads p
 
 | Doc | Why it's in the sample | Checked by | Date | Result |
 |---|---|---|---|---|
-| a-002 | Overlap (gas scheduling), canary, PII in a public doc | | | |
-| a-011 | Inference-only | | | |
-| a-013 | PII contact list | | | |
-| b-002 | Overlap (gas scheduling), canary | | | |
-| b-004 | Overlap (settlement) | | | |
-| b-006 | Prompt injection | | | |
-| b-010 | Contradiction and the cross-tenant trap | | | |
-| c-002 | Overlap (settlement), canary | | | |
-| c-009 | Current policy version | | | |
-| m-003 | Consultancy guide on an overlap topic | | | |
+| a-002 | Overlap (gas scheduling), canary, PII in a public doc | Parag | 15 Nov 2026 | Pass (no issues raised) |
+| a-011 | Inference-only | Parag | 15 Nov 2026 | Pass (no issues raised) |
+| a-013 | PII contact list | Parag | 15 Nov 2026 | Pass (no issues raised) |
+| b-002 | Overlap (gas scheduling), canary | Parag | 15 Nov 2026 | Pass (no issues raised) |
+| b-004 | Overlap (settlement) | Parag | 15 Nov 2026 | Pass (no issues raised) |
+| b-006 | Prompt injection | Parag | 15 Nov 2026 | Pass (no issues raised) |
+| b-010 | Contradiction and the cross-tenant trap | Parag | 15 Nov 2026 | Pass (no issues raised) |
+| c-002 | Overlap (settlement), canary | Parag | 15 Nov 2026 | Pass (no issues raised) |
+| c-009 | Current policy version | Parag | 15 Nov 2026 | Pass (no issues raised) |
+| m-003 | Consultancy guide on an overlap topic | Parag | 15 Nov 2026 | Pass (no issues raised) |
 
 ## Limitations
 

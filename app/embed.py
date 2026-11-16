@@ -23,7 +23,9 @@ class FastEmbedEmbedder:
         self._model = TextEmbedding(model_name, cache_dir=str(FASTEMBED_CACHE))
 
     def embed(self, texts: Sequence[str]) -> list[list[float]]:
-        return [v.tolist() for v in self._model.embed(list(texts))]
+        # Small batches keep peak memory low: fastembed's default (256 chunks of up to 512
+        # tokens) needs more than the 1 GB the ingest container gets. Vectors are identical.
+        return [v.tolist() for v in self._model.embed(list(texts), batch_size=16)]
 
 
 @lru_cache(maxsize=1)

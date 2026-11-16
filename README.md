@@ -29,16 +29,16 @@ The clients' topics overlap on purpose: two of them have gas nomination deadline
 
 ## Run it
 
-You need Python 3.12, [uv](https://docs.astral.sh/uv/) and Docker.
+You need **Git**, **Docker Desktop** and an **Anthropic API key**. No Python required.
 
 ```bash
-cp .env.example .env              # set the DB passwords and ANTHROPIC_API_KEY
-uv sync
-docker compose up -d db           # Postgres + pgvector
-uv run python -m ingest.cli       # chunk, mask PII, embed, load
-uv run pytest                     # including the tenant-isolation tests
-docker compose up --build         # API on :8000, UI on :8501
+git clone https://github.com/ICSmartBanana/etrm-knowledge-agent.git
+cd etrm-knowledge-agent
+cp .env.example .env              # then put your ANTHROPIC_API_KEY in .env
+docker compose up --build         # db -> ingest -> API (:8000) -> UI (:8501)
 ```
+
+Open http://localhost:8501. **[docs/RUN-LOCALLY.md](docs/RUN-LOCALLY.md)** has the step-by-step version: installing the tools, creating the Anthropic and (optional) Langfuse keys, the `.env` file, what to try, and troubleshooting.
 
 [CLAUDE.md](CLAUDE.md) has the full command list, the request flow and the architecture invariants. The governance pack is in [docs/governance/](docs/governance/README.md), and the stack decision is in [ADR 0001](docs/decisions/0001-stack.md).
 

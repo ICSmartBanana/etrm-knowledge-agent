@@ -4,6 +4,14 @@ Every change to prompts, models, retrieval settings or knowledge bases gets an e
 
 ## [Unreleased]
 
+### Added (easy local run)
+- `docker compose up --build` now does everything: a one-shot `ingest` service loads the knowledge base before the API starts, so reviewers need only Git, Docker Desktop and an Anthropic key.
+- `docs/RUN-LOCALLY.md`: a step-by-step guide covering tool installs, Anthropic and Langfuse keys, the `.env` file, what to try, and troubleshooting.
+- Host ports are configurable (`ETRM_DB_PORT`, `ETRM_API_PORT`, `ETRM_UI_PORT`), and `.env.example` ships working local database passwords.
+
+### Fixed
+- Embedding uses batches of 16 instead of fastembed's default 256. Ingest stalled at the 1 GB container memory limit. The vectors are unchanged.
+
 ### Added (M4 governance pack)
 - `docs/governance/`: risk register (12 risks, each with an owner, a mitigation and covering tests), model card (narrative; the facts stay generated), human-oversight note, incident process, regulatory register (EU, US federal and states, UK, Australia, India, with review dates), and a README index mapped to the NIST AI RMF functions.
 - `tests/governance/test_registers.py`: fails if a risk's covering test, gate, eval suite or CI job no longer exists, if a risk or region that the brief requires is missing, or if a regulatory row's review dates are invalid.

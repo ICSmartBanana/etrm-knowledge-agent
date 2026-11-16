@@ -6,8 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Milestones M0 (research, ADR), M1 (synthetic data), M2 (baseline agent, Langfuse tracing) and M3 (CI/CD gates) are done. M4's build work is done (governance pack in `docs/governance/`, the `agent-standards` repo, and `agent-project-template`); it is awaiting Parag's review and sign-off. Scope comes from:
 
-- `docs/brief/requirements-v0.1.docx`: the requirements brief (FR1–FR7, eval sets, CI gates, governance pack). It's the source of truth for scope.
-- `docs/brief/implementation-plan.md`: the milestones M0–M6 with "done when" criteria, and the cost-control rules.
+- The requirements brief (FR1–FR7, eval sets, CI gates, governance pack) and the implementation plan (milestones M0–M6 with "done when" criteria, cost-control rules) are private and not in this repo. "brief §N" references point to them. Ask Parag when scope is unclear.
 - `docs/decisions/0001-stack.md`: the approved stack, isolation design and budget.
 
 ## Commands

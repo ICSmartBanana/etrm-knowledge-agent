@@ -1,4 +1,5 @@
-# Local development stack. Dev-only passwords come from .env (see .env.example).
+# Local stack: `docker compose up --build` starts the database, loads the knowledge base
+# (ingest), then starts the API and the UI. Settings come from .env (see .env.example).
 services:
   db:
     image: pgvector/pgvector:pg16
@@ -9,7 +10,7 @@ services:
       ETRM_APP_PASSWORD: ${ETRM_APP_PASSWORD:?set ETRM_APP_PASSWORD in .env}
       ETRM_INGEST_PASSWORD: ${ETRM_INGEST_PASSWORD:?set ETRM_INGEST_PASSWORD in .env}
     ports:
-      - "127.0.0.1:5433:5432"
+      - "127.0.0.1:${ETRM_DB_PORT:-5433}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./db/init:/docker-entrypoint-initdb.d:ro
@@ -20,6 +21,22 @@ services:
       interval: 5s
       retries: 10
     mem_limit: 512m
+
+  # One-shot: chunk, mask PII, embed and load the synthetic knowledge bases, then exit.
+  ingest:
+    build: .
+    command: ["python", "-m", "ingest.cli"]
+    environment:
+      ETRM_INGEST_PASSWORD: ${ETRM_INGEST_PASSWORD}
+      ETRM_DB_HOST: db
+      ETRM_DB_PORT: "5432"
+    volumes:
+      - ./ingest:/srv/ingest:ro
+      - ./data:/srv/data:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    mem_limit: 1g
 
   api:
     build: .
@@ -34,10 +51,12 @@ services:
       LANGFUSE_HOST: ${LANGFUSE_HOST:-https://cloud.langfuse.com}
       ETRM_ENV: docker
     ports:
-      - "127.0.0.1:8000:8000"
+      - "127.0.0.1:${ETRM_API_PORT:-8000}:8000"
     depends_on:
       db:
         condition: service_healthy
+      ingest:
+        condition: service_completed_successfully
     mem_limit: 1g
 
   ui:
@@ -47,7 +66,7 @@ services:
     environment:
       ETRM_API_URL: http://api:8000
     ports:
-      - "127.0.0.1:8501:8501"
+      - "127.0.0.1:${ETRM_UI_PORT:-8501}:8501"
     depends_on:
       - api
     mem_limit: 512m

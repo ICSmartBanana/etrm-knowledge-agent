@@ -221,3 +221,6 @@ __marimo__/
 .traces/
 evals/results/
 build/
+
+# Private requirements brief and plan: local only, never committed
+docs/brief/

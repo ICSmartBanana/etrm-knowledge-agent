@@ -48,6 +48,7 @@ jobs:
           test "$(curl -fs localhost:7860/quota | jq .limit)" = 3
           curl -fsI -X OPTIONS localhost:7860/chat -H "Origin: $PORTAL_ORIGIN" \
             -H "Access-Control-Request-Method: POST" | grep -i "access-control-allow-origin: $PORTAL_ORIGIN"
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST localhost:7860/login             -H 'Origin: https://evil.example' -H 'Content-Type: application/json'             -d '{"client_id":"clan_a"}')" = 403
           tok=$(curl -fs -X POST localhost:7860/login -H 'Content-Type: application/json' \
             -d '{"client_id":"clan_a"}' | jq -r .token)
           ans=$(curl -fs -X POST localhost:7860/chat -H "Authorization: Bearer $tok" \

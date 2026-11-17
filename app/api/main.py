@@ -10,12 +10,13 @@ from __future__ import annotations
 
 import secrets
 from collections import OrderedDict
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from typing import Annotated, Literal
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, Field
 
 from app.agent import answer_question
@@ -51,6 +52,24 @@ if ALLOWED_ORIGINS:
         allow_methods=["GET", "POST"],
         allow_headers=["Authorization", "Content-Type"],
     )
+
+
+@app.middleware("http")
+async def reject_foreign_origins(
+    request: Request, call_next: Callable[[Request], Awaitable[Response]]
+) -> Response:
+    """Enforce the origin allow-list in the app, not only in CORS headers.
+
+    Some hosts' proxies (Hugging Face Spaces) answer CORS themselves and echo any origin, so
+    the browser-level restriction can't rely on headers. Browsers always send Origin on
+    cross-site requests; a POST from any other site is refused here.
+    """
+    origin = request.headers.get("origin")
+    if ALLOWED_ORIGINS and request.method == "POST" and origin and origin not in ALLOWED_ORIGINS:
+        return JSONResponse({"detail": "This API only accepts requests from the demo portal."}, 403)
+    return await call_next(request)
+
+
 # token -> tenant_id, in memory (POC only). Bounded so a public demo can't grow it forever.
 _sessions: OrderedDict[str, str] = OrderedDict()
 MAX_SESSIONS = 5_000

@@ -50,6 +50,8 @@ def parse(path: Path) -> tuple[dict[str, object], str]:
 
 def ingest() -> str:
     files = corpus_files()
+    if not files:
+        raise SystemExit(f"No documents under {CORPUS}; refusing to load an empty KB.")
     version, digest = kb_version(files)
     embedder = default_embedder()
     docs, rows = [], []

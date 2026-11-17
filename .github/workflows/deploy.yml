@@ -1,0 +1,145 @@
+# Hosted demo: the API on a Hugging Face Space (Docker) and the portal on GitHub Pages.
+# Runs on every push to main, or by hand. PRs that touch the backend run only the smoke test;
+# by hand on another branch, it deploys the Space but not the portal.
+#
+# Secrets: HF_TOKEN (write token), ANTHROPIC_API_KEY. Optional: LANGFUSE_PUBLIC_KEY,
+# LANGFUSE_SECRET_KEY. Optional repo variables: DEMO_DAILY_QUESTION_LIMIT (default 100),
+# DEMO_RATE_LIMIT_PER_MINUTE (default 5).
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths: ["deploy/**", "app/**", "ingest/**", "db/**", ".github/workflows/deploy.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  SPACE_NAME: etrm-knowledge-agent
+  PORTAL_ORIGIN: https://icsmartbanana.github.io
+
+jobs:
+  smoke-test:
+    name: build and smoke-test the backend image
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -f deploy/hf-space/Dockerfile -t etrm-space:ci .
+      - name: Start it and wait for ingest + API
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          docker run -d --name space -p 7860:7860 -e ANTHROPIC_API_KEY \
+            -e ETRM_DAILY_QUESTION_LIMIT=3 -e ETRM_ALLOWED_ORIGINS="$PORTAL_ORIGIN" etrm-space:ci
+          for i in $(seq 1 60); do curl -fs localhost:7860/health && break; sleep 5; done
+          docker logs space | tail -5
+          curl -fs localhost:7860/health
+      - name: Check limits, CORS, isolation and one real answer
+        run: |
+          set -euo pipefail
+          test "$(curl -fs localhost:7860/quota | jq .limit)" = 3
+          curl -fsI -X OPTIONS localhost:7860/chat -H "Origin: $PORTAL_ORIGIN" \
+            -H "Access-Control-Request-Method: POST" | grep -i "access-control-allow-origin: $PORTAL_ORIGIN"
+          tok=$(curl -fs -X POST localhost:7860/login -H 'Content-Type: application/json' \
+            -d '{"client_id":"clan_a"}' | jq -r .token)
+          ans=$(curl -fs -X POST localhost:7860/chat -H "Authorization: Bearer $tok" \
+            -H 'Content-Type: application/json' -d '{"question":"What is the day-ahead gas nomination deadline?"}')
+          echo "$ans" | jq '{outcome, citations, quota}'
+          echo "$ans" | jq -r .answer | grep -q "13:00"
+          echo "$ans" | jq -e '.quota.remaining == 2'
+      - if: always()
+        run: docker logs space 2>&1 | tail -30 || true
+
+  space:
+    name: deploy the backend to Hugging Face
+    needs: smoke-test
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      url: ${{ steps.push.outputs.url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Stage the Space files
+        run: |
+          mkdir -p space/deploy/hf-space
+          cp -r app ingest prompts data db pyproject.toml uv.lock .python-version LICENSE space/
+          cp deploy/hf-space/start.sh space/deploy/hf-space/
+          cp deploy/hf-space/Dockerfile space/Dockerfile
+          cp deploy/hf-space/README.md space/README.md
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Create or update the Space
+        id: push
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+          DAILY_LIMIT: ${{ vars.DEMO_DAILY_QUESTION_LIMIT || '100' }}
+          RATE_LIMIT: ${{ vars.DEMO_RATE_LIMIT_PER_MINUTE || '5' }}
+        run: |
+          pip install -q "huggingface_hub==0.26.2"
+          python - <<'PY'
+          import os
+          from huggingface_hub import HfApi
+          api = HfApi(token=os.environ["HF_TOKEN"])
+          user = api.whoami()["name"]
+          repo = f"{user}/{os.environ['SPACE_NAME']}"
+          api.create_repo(repo, repo_type="space", space_sdk="docker", exist_ok=True)
+          api.add_space_secret(repo, "ANTHROPIC_API_KEY", os.environ["ANTHROPIC_API_KEY"])
+          for k in ("LANGFUSE_PUBLIC_KEY", "LANGFUSE_SECRET_KEY"):
+              if os.environ.get(k):
+                  api.add_space_secret(repo, k, os.environ[k])
+          variables = {
+              "ETRM_ALLOWED_ORIGINS": os.environ["PORTAL_ORIGIN"],
+              "ETRM_DAILY_QUESTION_LIMIT": os.environ["DAILY_LIMIT"],
+              "ETRM_RATE_LIMIT_PER_MINUTE": os.environ["RATE_LIMIT"],
+              "ETRM_MAX_QUESTION_CHARS": "1000",
+              "ETRM_ENV": "hf-space",
+          }
+          for k, v in variables.items():
+              api.add_space_variable(repo, k, v)
+          api.upload_folder(repo_id=repo, repo_type="space", folder_path="space",
+                            commit_message=f"Deploy {os.environ['GITHUB_SHA'][:7]}", delete_patterns="*")
+          host = repo.replace("/", "-").replace("_", "-").replace(".", "-").lower()
+          url = f"https://{host}.hf.space"
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"url={url}\n")
+          print("Space:", f"https://huggingface.co/spaces/{repo}", "API:", url)
+          PY
+
+  pages:
+    name: publish the portal to GitHub Pages
+    needs: space
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: 0.13.8
+          enable-cache: true
+      - run: uv sync --frozen
+      - run: uv run python scripts/build_portal.py --out build/portal --api-url "${{ needs.space.outputs.url }}"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/portal
+      - id: deployment
+        uses: actions/deploy-pages@v4

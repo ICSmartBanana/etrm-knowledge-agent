@@ -92,3 +92,20 @@ def test_abstains_without_calling_the_model_when_retrieval_is_weak(
     assert resp["outcome"] == "no_information"
     assert resp["disclosure"] == AI_DISCLOSURE
     assert stub.calls == []
+
+
+def test_daily_quota_blocks_after_the_limit_and_is_reported(
+    stub: StubLLM, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The hosted demo shares one daily allowance; the UI shows it from /quota.
+    from app.api.limits import DailyQuota
+
+    monkeypatch.setattr("app.api.main.DAILY_QUOTA", DailyQuota(1))
+    headers = _login("clan_a")
+    first = client.post(
+        "/chat", json={"question": "When does the EOD batch start?"}, headers=headers
+    )
+    assert first.status_code == 200 and first.json()["quota"]["remaining"] == 0
+    second = client.post("/chat", json={"question": "And on Fridays?"}, headers=headers)
+    assert second.status_code == 429 and "resets at 00:00 UTC" in second.json()["detail"]
+    assert client.get("/quota").json()["used"] == 1

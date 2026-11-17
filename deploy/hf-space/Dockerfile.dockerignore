@@ -1,0 +1,11 @@
+# Used instead of the root .dockerignore when building deploy/hf-space/Dockerfile:
+# the Space image must include the synthetic corpus, which it ingests at startup.
+.git
+.venv
+.cache
+.env
+.traces
+build
+evals/results
+docs/brief
+**/__pycache__

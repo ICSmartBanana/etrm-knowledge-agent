@@ -7,6 +7,7 @@ Every change to prompts, models, retrieval settings or knowledge bases gets an e
 ### Added (hosted demo)
 - A portal on GitHub Pages (`portal/`, built by `scripts/build_portal.py`). It has a client switcher, each client's own documents (PII masked as at ingestion), live chat with clickable citations, the 242 recorded eval answers, an agent report with score history and improvements, and links to all docs and repos. The build fails if any PII would be published.
 - A live backend on a Hugging Face Space (`deploy/hf-space/`): Postgres + pgvector, ingest and the API in one container, deployed by `.github/workflows/deploy.yml` after an image smoke test (health, limits, CORS, one real answer).
+- `ingest` refuses to run when it finds no documents. The Space image was first built without the corpus (the root `.dockerignore` excludes it) and quietly served an empty knowledge base; `deploy/hf-space/Dockerfile.dockerignore` now includes it.
 - API limits for the public demo, all off by default (`app/api/limits.py`): a shared daily question allowance reset at 00:00 UTC and shown in the UI (`GET /quota`, `quota` in every chat response), a per-visitor rate limit, a question-length cap, CORS limited to the portal origin, and a bounded session store.
 
 ### Added (easy local run)

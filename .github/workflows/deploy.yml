@@ -1,5 +1,6 @@
 # Hosted demo: the API on a Hugging Face Space (Docker) and the portal on GitHub Pages.
-# Runs on every push to main, or by hand. By hand on another branch, it deploys the Space only.
+# Runs on every push to main, or by hand. PRs that touch the backend run only the smoke test;
+# by hand on another branch, it deploys the Space but not the portal.
 #
 # Secrets: HF_TOKEN (write token), ANTHROPIC_API_KEY. Optional: LANGFUSE_PUBLIC_KEY,
 # LANGFUSE_SECRET_KEY. Optional repo variables: DEMO_DAILY_QUESTION_LIMIT (default 100),
@@ -9,6 +10,8 @@ name: deploy
 on:
   push:
     branches: [main]
+  pull_request:
+    paths: ["deploy/**", "app/**", "ingest/**", "db/**", ".github/workflows/deploy.yml"]
   workflow_dispatch:
 
 permissions:
@@ -58,6 +61,7 @@ jobs:
   space:
     name: deploy the backend to Hugging Face
     needs: smoke-test
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     outputs:

@@ -61,7 +61,9 @@ jobs:
   space:
     name: deploy the backend to Hugging Face
     needs: smoke-test
-    if: github.event_name != 'pull_request'
+    # Docker Spaces need a Hugging Face PRO account. The repo variable DEMO_BACKEND=hf-space
+    # switches this on; without it the portal still publishes, running on recorded answers.
+    if: github.event_name != 'pull_request' && vars.DEMO_BACKEND == 'hf-space'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     outputs:
@@ -121,7 +123,8 @@ jobs:
   pages:
     name: publish the portal to GitHub Pages
     needs: space
-    if: github.ref == 'refs/heads/main'
+    # Publish even without a live backend: the portal then runs on recorded answers.
+    if: always() && github.ref == 'refs/heads/main' && needs.space.result != 'failure'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

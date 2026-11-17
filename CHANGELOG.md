@@ -4,6 +4,11 @@ Every change to prompts, models, retrieval settings or knowledge bases gets an e
 
 ## [Unreleased]
 
+### Added (hosted demo)
+- A portal on GitHub Pages (`portal/`, built by `scripts/build_portal.py`). It has a client switcher, each client's own documents (PII masked as at ingestion), live chat with clickable citations, the 242 recorded eval answers, an agent report with score history and improvements, and links to all docs and repos. The build fails if any PII would be published.
+- A live backend on a Hugging Face Space (`deploy/hf-space/`): Postgres + pgvector, ingest and the API in one container, deployed by `.github/workflows/deploy.yml` after an image smoke test (health, limits, CORS, one real answer).
+- API limits for the public demo, all off by default (`app/api/limits.py`): a shared daily question allowance reset at 00:00 UTC and shown in the UI (`GET /quota`, `quota` in every chat response), a per-visitor rate limit, a question-length cap, CORS limited to the portal origin, and a bounded session store.
+
 ### Added (easy local run)
 - `docker compose up --build` now does everything: a one-shot `ingest` service loads the knowledge base before the API starts, so reviewers need only Git, Docker Desktop and an Anthropic key.
 - `docs/RUN-LOCALLY.md`: a step-by-step guide covering tool installs, Anthropic and Langfuse keys, the `.env` file, what to try, and troubleshooting.

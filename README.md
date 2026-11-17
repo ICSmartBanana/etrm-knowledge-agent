@@ -1,5 +1,7 @@
 # etrm-knowledge-agent
 
+**▶ Live demo: https://icsmartbanana.github.io/etrm-knowledge-agent/**: chat as each client, browse their documents, and read the agent's eval report.
+
 **One AI assistant, several clients, zero cross-client leakage, and the receipts to prove it.**
 
 A proof of concept for a multi-tenant RAG chatbot in the ETRM (energy and commodity trading and risk management) consulting domain. One codebase and one agent image serve three fictional clients: a gas and power utility, a refined-products trader and an agricultural trader. A shared consultancy knowledge base is visible to all three. All data is **synthetic**.

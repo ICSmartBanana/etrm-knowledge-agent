@@ -1,0 +1,273 @@
+{
+ "runs": [
+  {
+   "label": "Iteration 1 baseline (full suite)",
+   "timestamp": "2026-11-15T13:26:43.468171+00:00",
+   "suite": "all",
+   "kb_version": "kb-20261115-d34b5d28",
+   "prompt_version": "v1",
+   "answer_model": "claude-sonnet-5-5",
+   "note": "The first recorded baseline, re-run after the golden-set fix.",
+   "summary": {
+    "overall": {
+     "n": 242,
+     "retrieval_hit_at_k": 1.0,
+     "retrieval_mrr": 0.9057,
+     "must_include": 0.9587,
+     "must_not_include": 1.0,
+     "outcome_correct": 0.9917,
+     "cited_expected_doc": 0.9843
+    },
+    "by_suite": {
+     "adversarial": {
+      "n": 28,
+      "retrieval_hit_at_k": 1.0,
+      "retrieval_mrr": 0.6429,
+      "must_include": 1.0,
+      "must_not_include": 1.0,
+      "outcome_correct": 1.0,
+      "cited_expected_doc": null
+     },
+     "golden": {
+      "n": 131,
+      "retrieval_hit_at_k": 1.0,
+      "retrieval_mrr": 0.9221,
+      "must_include": 0.9237,
+      "must_not_include": 1.0,
+      "outcome_correct": 0.9847,
+      "cited_expected_doc": 0.9813
+     },
+     "leakage": {
+      "n": 42,
+      "retrieval_hit_at_k": null,
+      "retrieval_mrr": null,
+      "must_include": 1.0,
+      "must_not_include": 1.0,
+      "outcome_correct": 1.0,
+      "cited_expected_doc": null
+     },
+     "overlap": {
+      "n": 20,
+      "retrieval_hit_at_k": 1.0,
+      "retrieval_mrr": 0.91,
+      "must_include": 1.0,
+      "must_not_include": 1.0,
+      "outcome_correct": 1.0,
+      "cited_expected_doc": 1.0
+     },
+     "pii_inference": {
+      "n": 21,
+      "retrieval_hit_at_k": null,
+      "retrieval_mrr": null,
+      "must_include": 1.0,
+      "must_not_include": 1.0,
+      "outcome_correct": 1.0,
+      "cited_expected_doc": null
+     }
+    },
+    "hard_gate_failures": {
+     "leakage": 0,
+     "pii": 0,
+     "inference_only": 0,
+     "system_prompt_or_injection": 0
+    },
+    "hard_gates_passed": true,
+    "tokens": {
+     "input": 280095,
+     "output": 32608
+    },
+    "p95_latency_ms": 2918
+   }
+  },
+  {
+   "label": "Regression baseline",
+   "timestamp": "2026-11-15T13:26:43.468171+00:00",
+   "suite": "regression",
+   "kb_version": "kb-20261115-d34b5d28",
+   "prompt_version": "v1",
+   "answer_model": "claude-sonnet-5-5",
+   "note": "Derived from the full baseline: the frozen 105-item PR subset.",
+   "summary": {
+    "overall": {
+     "n": 105,
+     "retrieval_hit_at_k": 1.0,
+     "retrieval_mrr": 0.8741,
+     "must_include": 0.9619,
+     "must_not_include": 1.0,
+     "outcome_correct": 0.981,
+     "cited_expected_doc": 0.9574
+    },
+    "by_suite": {
+     "adversarial": {
+      "n": 28,
+      "retrieval_hit_at_k": 1.0,
+      "retrieval_mrr": 0.6429,
+      "must_include": 1.0,
+      "must_not_include": 1.0,
+      "outcome_correct": 1.0,
+      "cited_expected_doc": null
+     },
+     "golden": {
+      "n": 33,
+      "retrieval_hit_at_k": 1.0,
+      "retrieval_mrr": 0.9074,
+      "must_include": 0.8788,
+      "must_not_include": 1.0,
+      "outcome_correct": 0.9394,
+      "cited_expected_doc": 0.9259
+     },
+     "leakage": {
+      "n": 12,
+      "retrieval_hit_at_k": null,
+      "retrieval_mrr": null,
+      "must_include": 1.0,
+      "must_not_include": 1.0,
+      "outcome_correct": 1.0,
+      "cited_expected_doc": null
+     },
+     "overlap": {
+      "n": 20,
+      "retrieval_hit_at_k": 1.0,
+      "retrieval_mrr": 0.91,
+      "must_include": 1.0,
+      "must_not_include": 1.0,
+      "outcome_correct": 1.0,
+      "cited_expected_doc": 1.0
+     },
+     "pii_inference": {
+      "n": 12,
+      "retrieval_hit_at_k": null,
+      "retrieval_mrr": null,
+      "must_include": 1.0,
+      "must_not_include": 1.0,
+      "outcome_correct": 1.0,
+      "cited_expected_doc": null
+     }
+    },
+    "hard_gate_failures": {
+     "leakage": 0,
+     "pii": 0,
+     "inference_only": 0,
+     "system_prompt_or_injection": 0
+    },
+    "hard_gates_passed": true,
+    "tokens": {
+     "input": 108878,
+     "output": 12837
+    },
+    "p95_latency_ms": 2712
+   }
+  },
+  {
+   "label": "Latest PR regression run",
+   "timestamp": "2026-11-16T16:10:26.227360+00:00",
+   "suite": "regression",
+   "kb_version": "kb-20261116-ba7fa0ec",
+   "prompt_version": "v1",
+   "answer_model": "claude-sonnet-5-5",
+   "note": "Run in CI on the 'one-command local run' PR, with a re-ingested knowledge base.",
+   "summary": {
+    "overall": {
+     "n": 105,
+     "retrieval_hit_at_k": 1.0,
+     "retrieval_mrr": 0.8741,
+     "must_include": 0.9714,
+     "must_not_include": 1.0,
+     "outcome_correct": 0.9905,
+     "cited_expected_doc": 0.9787
+    },
+    "by_suite": {
+     "adversarial": {
+      "n": 28,
+      "retrieval_hit_at_k": 1.0,
+      "retrieval_mrr": 0.6429,
+      "must_include": 1.0,
+      "must_not_include": 1.0,
+      "outcome_correct": 1.0,
+      "cited_expected_doc": null
+     },
+     "golden": {
+      "n": 33,
+      "retrieval_hit_at_k": 1.0,
+      "retrieval_mrr": 0.9074,
+      "must_include": 0.9091,
+      "must_not_include": 1.0,
+      "outcome_correct": 0.9697,
+      "cited_expected_doc": 0.963
+     },
+     "leakage": {
+      "n": 12,
+      "retrieval_hit_at_k": null,
+      "retrieval_mrr": null,
+      "must_include": 1.0,
+      "must_not_include": 1.0,
+      "outcome_correct": 1.0,
+      "cited_expected_doc": null
+     },
+     "overlap": {
+      "n": 20,
+      "retrieval_hit_at_k": 1.0,
+      "retrieval_mrr": 0.91,
+      "must_include": 1.0,
+      "must_not_include": 1.0,
+      "outcome_correct": 1.0,
+      "cited_expected_doc": 1.0
+     },
+     "pii_inference": {
+      "n": 12,
+      "retrieval_hit_at_k": null,
+      "retrieval_mrr": null,
+      "must_include": 1.0,
+      "must_not_include": 1.0,
+      "outcome_correct": 1.0,
+      "cited_expected_doc": null
+     }
+    },
+    "hard_gate_failures": {
+     "leakage": 0,
+     "pii": 0,
+     "inference_only": 0,
+     "system_prompt_or_injection": 0
+    },
+    "hard_gates_passed": true,
+    "tokens": {
+     "input": 108878,
+     "output": 12846
+    },
+    "p95_latency_ms": 2497
+   }
+  }
+ ],
+ "timeline": [
+  {
+   "date": "2026-11-15",
+   "what": "Baseline agent and first full eval (M2)",
+   "detail": "242 frozen cases. 0 hard-gate failures from the first recorded baseline."
+  },
+  {
+   "date": "2026-11-15",
+   "what": "Leakage scoring corrected before the baseline",
+   "detail": "6 'leaks' were the agent repeating a company name the user had typed while refusing. The gate now ignores user-typed text; a test proves untyped values are still caught."
+  },
+  {
+   "date": "2026-11-15",
+   "what": "Golden set fixed",
+   "detail": "24 of 131 questions contained the generator's drafting text (13 contained the answer). Regenerated with structured output, plus a test that rejects such questions. Exact-value accuracy moved 0.93 \u2192 0.92 on the honest set."
+  },
+  {
+   "date": "2026-11-15",
+   "what": "CI/CD gates (M3)",
+   "detail": "A deliberately leaky PR that removed both isolation layers was blocked: 85 leakage-gate failures, failing isolation tests and the governance check. Trivy caught two HIGH zlib CVEs, fixed the same day."
+  },
+  {
+   "date": "2026-11-15",
+   "what": "Governance pack (M4)",
+   "detail": "Risk register tied to live tests, model card, regulatory register, incident process. Added a missing test for the cite-or-abstain path."
+  },
+  {
+   "date": "2026-11-16",
+   "what": "One-command local run",
+   "detail": "A fresh-clone test found ingest stalling at 1 GB of memory; embedding in batches of 16 fixed it. The regression run on that PR: exact values 0.962 \u2192 0.971, correct outcomes 0.981 \u2192 0.991, correct citations 0.957 \u2192 0.979."
+  }
+ ]
+}

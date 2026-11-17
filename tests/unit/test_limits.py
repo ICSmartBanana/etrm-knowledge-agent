@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
+import pytest
+from fastapi.testclient import TestClient
+
 from app.api.limits import DailyQuota, RateLimiter
 
 DAY1 = datetime(2026, 11, 17, 9, 0, tzinfo=UTC)
@@ -34,3 +37,20 @@ def test_rate_limit_is_per_visitor_and_rolls_over_a_minute() -> None:
     assert r.allow("b", 2), "another visitor has their own allowance"
     assert r.allow("a", 61), "the oldest hit has left the 60-second window"
     assert RateLimiter(0).allow("x", 0)
+
+
+def test_posts_from_foreign_origins_are_refused(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The host's proxy may echo any origin in CORS headers, so the app enforces the list itself.
+    import app.api.main as main
+
+    monkeypatch.setattr(main, "ALLOWED_ORIGINS", ["https://portal.example"])
+    c = TestClient(main.app)
+    body = {"client_id": "clan_a"}
+    assert (
+        c.post("/login", json=body, headers={"Origin": "https://evil.example"}).status_code == 403
+    )
+    assert (
+        c.post("/login", json=body, headers={"Origin": "https://portal.example"}).status_code == 200
+    )
+    assert c.post("/login", json=body).status_code == 200  # no Origin: not a browser request
+    assert c.get("/quota", headers={"Origin": "https://evil.example"}).status_code == 200

@@ -9,6 +9,7 @@ Every change to prompts, models, retrieval settings or knowledge bases gets an e
 - A live backend on a Hugging Face Space (`deploy/hf-space/`): Postgres + pgvector, ingest and the API in one container, deployed by `.github/workflows/deploy.yml` after an image smoke test (health, limits, CORS, one real answer).
 - `ingest` refuses to run when it finds no documents. The Space image was first built without the corpus (the root `.dockerignore` excludes it) and quietly served an empty knowledge base; `deploy/hf-space/Dockerfile.dockerignore` now includes it.
 - The backend deploy is switched on by the repo variable `DEMO_BACKEND=hf-space`, since Docker Spaces need Hugging Face PRO. The portal publishes even without it, in recorded-answers mode.
+- The API refuses POSTs carrying a foreign `Origin` header. The Hugging Face proxy echoes any origin in its CORS headers, so the browser-level restriction is now enforced in the app, and the smoke test checks it.
 - API limits for the public demo, all off by default (`app/api/limits.py`): a shared daily question allowance reset at 00:00 UTC and shown in the UI (`GET /quota`, `quota` in every chat response), a per-visitor rate limit, a question-length cap, CORS limited to the portal origin, and a bounded session store.
 
 ### Added (easy local run)

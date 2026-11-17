@@ -75,8 +75,8 @@ function status(text, kind = "") { const el = $("#chat-status"); el.className = 
 
 async function wakeBackend() {
   if (!S.cfg.apiUrl) {
-    status(`Live chat isn't configured for this build. Browse the <a href="#recorded" onclick="showTab('recorded')">recorded answers</a>, or <a href="${esc(S.cfg.repo)}/blob/main/docs/RUN-LOCALLY.md" target="_blank" rel="noopener">run it locally</a>.`, "warn");
-    setQuota(null); $("#send").disabled = true; return;
+    status(`Live chat is coming soon. Until then, browse <a href="#recorded" onclick="showTab('recorded')">242 recorded answers</a> from the real agent (same questions, refusals and leak attempts), or <a href="${esc(S.cfg.repo)}/blob/main/docs/RUN-LOCALLY.md" target="_blank" rel="noopener">run it locally</a> with one command.`, "warn");
+    $("#quota").textContent = "recorded answers mode"; $("#quota").className = "pill low"; $("#send").disabled = true; return;
   }
   status("Connecting to the live agent… The free hosting sleeps when idle, so the first visit can take a minute or two.", "warn");
   const started = Date.now();
